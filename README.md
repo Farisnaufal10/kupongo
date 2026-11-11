@@ -1,49 +1,64 @@
 # KuponGo
 
-**KuponGo** adalah sistem pemesanan makanan dan minuman berbasis web yang dikembangkan untuk Sentra Kuliner D'Kupon. Sistem ini dirancang untuk mengintegrasikan pemesanan dari beberapa tenant melalui satu platform, dengan dukungan QR Code meja, pembayaran digital, pengelolaan pesanan, serta dashboard analitik penjualan.
+**KuponGo** adalah sistem pemesanan makanan dan minuman berbasis web yang dirancang untuk Sentra Kuliner D'Kupon. Sistem ini mengintegrasikan pemesanan dari beberapa tenant melalui satu keranjang, identifikasi meja menggunakan QR Code, pembayaran, pengelolaan pesanan, pencatatan transaksi, serta dashboard analitik penjualan.
 
-Proyek ini merupakan bagian dari **Capstone Design Project Kelompok 38 – Program Studi Sistem Informasi, Telkom University Jakarta**.
+Proyek ini dikembangkan oleh **Kelompok 38 – Program Studi Sistem Informasi, Telkom University Jakarta** sebagai bagian dari Capstone Design Project.
 
 ## Fitur yang Direncanakan
 
-Pengembangan KuponGo mencakup tiga peran utama dengan fungsi sebagai berikut.
+Pengembangan sistem mengacu pada Functional Requirement (FR), Non-Functional Requirement (NFR), Use Case Diagram, dan rancangan sistem dalam proposal Capstone.
 
 ### 1. Pembeli
-- Mengakses halaman pemesanan melalui QR Code meja tanpa login.
-- Melihat daftar tenant dan menu yang tersedia.
-- Memilih menu dari beberapa tenant dalam satu keranjang.
-- Mengatur jumlah pesanan dan menambahkan catatan khusus.
-- Melakukan checkout dengan metode pembayaran QRIS atau tunai.
-- Memantau status pengerjaan pesanan.
+
+- Memindai QR Code meja untuk mengidentifikasi nomor meja pemesanan. (FR-01)
+- Melihat daftar tenant dan menu beserta harga serta ketersediaannya. (FR-02, FR-03)
+- Menyusun pesanan dari beberapa tenant dalam satu keranjang, mengatur jumlah menu, dan menambahkan catatan khusus. (FR-04, FR-05, FR-06)
+- Melihat rincian pesanan dan total pembayaran berdasarkan tenant. (FR-07)
+- Memilih pembayaran QRIS atau tunai dan menyelesaikan proses checkout. (FR-09–FR-13)
+- Melihat status pengerjaan pesanan. (FR-08)
+- Mendapatkan pembatasan pemesanan pada tenant yang berstatus tutup. (FR-30)
 
 ### 2. Tenant
-- Login menggunakan akun tenant yang terdaftar.
-- Mengelola data menu, harga, dan ketersediaan menu.
-- Mengatur status operasional tenant.
-- Menerima sub-pesanan sesuai tenant masing-masing.
-- Mengonfirmasi pembayaran tunai yang diterima.
-- Memperbarui status pengerjaan pesanan.
-- Melihat riwayat transaksi dan ringkasan penjualan.
+
+- Login menggunakan akun tenant yang terdaftar. (FR-21)
+- Mengubah status operasional tenant menjadi buka atau tutup. (FR-22)
+- Mengelola data menu, harga, serta status ketersediaan menu. (FR-23)
+- Mengonfirmasi pembayaran tunai untuk sub-pesanan miliknya. (FR-14)
+- Melihat sub-pesanan yang telah dibayar dan diteruskan ke tenant terkait. (FR-18)
+- Memperbarui status pengerjaan pesanan. (FR-19)
+- Menerima pemberitahuan pesanan baru sebagai fitur pengembangan sesuai prioritas kebutuhan. (FR-20)
+- Melihat riwayat transaksi dan ringkasan penjualan tenant. (FR-26, FR-27)
 
 ### 3. Pengelola
-- Login menggunakan akun pengelola.
-- Mengelola data dan akun tenant.
-- Mengelola data meja dan menghasilkan QR Code.
-- Memantau transaksi seluruh tenant.
-- Melihat dashboard analitik penjualan, termasuk omzet, menu terlaris, dan tren penjualan.
 
-## Mekanisme Pemesanan dan Pembayaran
+- Login menggunakan akun pengelola yang terdaftar. (FR-21)
+- Mengelola data dan akun tenant. (FR-24)
+- Mengelola data meja, menghasilkan, serta mengunduh QR Code meja. (FR-29)
+- Melihat dashboard analitik penjualan seluruh tenant. (FR-28)
 
-KuponGo menggunakan konsep **single cart multi-tenant**, yaitu pembeli dapat memesan menu dari beberapa tenant dalam satu transaksi.
+### 4. Pengelolaan Pesanan dan Pembayaran
 
-Setiap checkout menghasilkan satu *master order* yang memuat rincian sub-pesanan berdasarkan tenant. Sistem mengidentifikasi setiap sub-pesanan menggunakan kode tenant agar informasi pesanan dan transaksi tercatat secara terpisah.
+- Menghasilkan satu kode pesanan utama (*master order*) untuk setiap checkout. (FR-12)
+- Memisahkan pesanan menjadi sub-pesanan berdasarkan tenant. (FR-15)
+- Mencatat status pembayaran setiap sub-pesanan secara terpisah. (FR-16)
+- Memperbarui status pembayaran master order berdasarkan status seluruh sub-pesanan. (FR-17)
+- Meneruskan sub-pesanan yang telah dibayar kepada tenant terkait. (FR-18)
+- Mencatat transaksi penjualan berdasarkan tenant. (FR-25)
+- Memproses satu pembayaran QRIS untuk pesanan gabungan melalui layanan pembayaran yang diuji pada lingkungan sandbox. (FR-10, FR-11)
 
-Metode pembayaran yang direncanakan meliputi:
+**Rencana integrasi Payment Gateway:** Sistem akan menghitung alokasi pembayaran berdasarkan kode tenant. Integrasi pembagian dana otomatis masih memerlukan pemilihan penyedia Payment Gateway yang mendukung mekanisme tersebut dan akan diverifikasi dalam lingkungan pengujian.
 
-- **QRIS:** Pembeli melakukan satu pembayaran melalui Payment Gateway. Sistem menerima konfirmasi pembayaran dan mencatat alokasi dana berdasarkan kode tenant. Mekanisme penyaluran dana otomatis bergantung pada dukungan fitur pembagian dana dari penyedia Payment Gateway.
-- **Tunai:** Pembeli melakukan pembayaran langsung kepada tenant terkait. Setiap tenant mengonfirmasi pembayaran pada sub-pesanan miliknya melalui sistem.
+Untuk pembayaran tunai, pembeli melakukan pembayaran langsung kepada tenant terkait. Setiap tenant mengonfirmasi pembayaran sub-pesanan miliknya melalui sistem.
 
-Integrasi pembayaran digital direncanakan menggunakan lingkungan **sandbox** untuk kebutuhan pengembangan dan pengujian.
+## Kebutuhan Non-Fungsional
+
+Implementasi sistem mengacu pada kebutuhan non-fungsional dalam proposal, dengan fokus pada:
+
+- **Aksesibilitas:** Website dapat diakses melalui browser perangkat mobile maupun desktop. (NFR-01, NFR-02)
+- **Keandalan:** Konsistensi data master order dan sub-order, pencegahan pencatatan pembayaran ganda, serta penyimpanan transaksi yang tetap terjaga saat halaman dimuat ulang. (NFR-03–NFR-06)
+- **Kinerja:** Pemisahan pesanan kurang dari dua detik pada kondisi pengujian yang ditetapkan dan pembaruan informasi dashboard paling lambat lima menit setelah transaksi tercatat. (NFR-07, NFR-08)
+- **Keamanan:** Penyimpanan kata sandi menggunakan hash dan pembatasan hak akses berdasarkan peran pengguna. (NFR-09, NFR-10)
+- **Antarmuka:** Bahasa Indonesia, desain responsif, tampilan konsisten, serta konfirmasi sebelum tindakan penonaktifan tertentu. (NFR-11–NFR-15)
 
 ## Teknologi Pengembangan
 
@@ -52,23 +67,23 @@ Integrasi pembayaran digital direncanakan menggunakan lingkungan **sandbox** unt
 | Backend | PHP, Laravel |
 | Arsitektur | Model-View-Controller (MVC) |
 | Database | MySQL |
-| Frontend | Web responsif |
+| Frontend | Website responsif, dengan rancangan PWA |
 | Payment Integration | Payment Gateway (Sandbox) |
 | Version Control | Git & GitHub |
-| Development IDE | Google Antigravity (opsional bagi anggota) |
-| Testing | Black Box Testing & User Acceptance Testing (UAT) |
+| Development Tools | Google Antigravity |
+| Pengujian | Black Box Testing & User Acceptance Testing (UAT) |
 
-Framework atau library frontend tambahan akan ditetapkan ketika struktur awal proyek Laravel disiapkan.
+Framework atau library frontend tambahan akan ditetapkan pada tahap persiapan implementasi.
 
 ## Metode Pengembangan
 
-KuponGo dikembangkan menggunakan metode **Prototype** melalui tahapan analisis kebutuhan, perancangan sistem, pembuatan prototype, evaluasi pengguna, penyempurnaan, implementasi, serta pengujian sistem.
+KuponGo menggunakan metode **Prototype** dengan tahapan analisis kebutuhan, perancangan sistem, pembuatan prototype, evaluasi pengguna, penyempurnaan, implementasi, dan pengujian.
 
-Rancangan sistem mengacu pada kebutuhan fungsional, kebutuhan non-fungsional, UML, ERD, dan desain antarmuka yang telah disusun dalam proposal Capstone.
+Perancangan sistem didokumentasikan melalui Use Case Diagram, Use Case Description, Activity Diagram, Class Diagram, Entity Relationship Diagram (ERD), dan Sequence Diagram.
 
 ## Memulai Pengembangan
 
-Repository ini digunakan sebagai pusat pengembangan dan kolaborasi source code KuponGo.
+Repository ini digunakan sebagai pusat kolaborasi source code KuponGo.
 
 ### Clone Repository
 
@@ -83,18 +98,18 @@ Ganti `OWNER` dengan username atau nama organisasi GitHub pemilik repository.
 
 ### Konfigurasi Lokal
 
-Proyek sedang berada pada tahap persiapan implementasi. Panduan instalasi Laravel, konfigurasi MySQL, dan perintah menjalankan aplikasi akan dilengkapi setelah struktur awal source code tersedia.
+Panduan instalasi Laravel, konfigurasi MySQL, dan perintah menjalankan aplikasi akan ditambahkan setelah struktur awal proyek tersedia.
 
 ## Panduan Kontribusi
 
-Seluruh anggota kelompok menggunakan repository yang sama dan mengikuti alur kerja Git berikut:
+Pengembangan dilakukan melalui branch terpisah berdasarkan fitur yang dikerjakan.
 
 1. Mengambil perubahan terbaru dari branch `main`.
-2. Membuat branch baru sesuai fitur yang dikerjakan.
-3. Mengembangkan dan menguji perubahan pada branch masing-masing.
-4. Melakukan commit dengan pesan yang menjelaskan perubahan.
-5. Membuat Pull Request untuk menggabungkan perubahan ke branch `main`.
-6. Melakukan review sebelum Pull Request digabungkan.
+2. Membuat branch baru sesuai fitur.
+3. Mengembangkan dan menguji perubahan.
+4. Melakukan commit dengan pesan yang jelas.
+5. Membuat Pull Request untuk menggabungkan perubahan.
+6. Melakukan pemeriksaan kode sebelum perubahan digabungkan ke `main`.
 
 Contoh penamaan branch:
 
@@ -104,21 +119,21 @@ Contoh penamaan branch:
 - `feature/payment`
 - `fix/nama-perbaikan`
 
-Hindari melakukan perubahan langsung pada branch `main` selama pengembangan fitur berlangsung.
+Selama pengembangan fitur, hindari melakukan perubahan langsung pada branch `main`.
 
 ## Keamanan Repository
 
-- Jangan mengunggah file `.env` atau kredensial pribadi.
-- Jangan menyimpan API key, password database, atau token Payment Gateway di source code.
-- Gunakan `.env.example` sebagai referensi konfigurasi lingkungan pengembangan.
-- Pastikan perubahan database dibagikan melalui Laravel Migration.
-- Gunakan data pengujian untuk transaksi dan integrasi Payment Gateway.
+- Jangan mengunggah file `.env` atau data kredensial.
+- Jangan menyimpan password, API key, maupun token Payment Gateway di source code.
+- Gunakan `.env.example` sebagai contoh konfigurasi lingkungan.
+- Bagikan perubahan struktur database melalui Laravel Migration.
+- Gunakan data pengujian dan lingkungan sandbox untuk integrasi pembayaran.
 
-## Status Proyek
+## Status Pengembangan
 
 **In Development — Initial Setup**
 
-Repository sedang dipersiapkan untuk implementasi sistem KuponGo. Fitur-fitur yang dijelaskan dalam dokumentasi ini merupakan ruang lingkup pengembangan dan belum dinyatakan selesai.
+Repository sedang dipersiapkan untuk pengembangan sistem KuponGo. Seluruh fitur dalam dokumentasi ini merupakan ruang lingkup yang direncanakan dan belum dinyatakan selesai diimplementasikan.
 
 ---
 

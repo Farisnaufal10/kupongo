@@ -64,13 +64,16 @@ Implementasi sistem mengacu pada kebutuhan non-fungsional dalam proposal, dengan
 
 | Komponen | Teknologi |
 |---|---|
-| Backend | PHP, Laravel |
+| Backend | PHP, Laravel 12 |
 | Arsitektur | Model-View-Controller (MVC) |
 | Database | MySQL |
-| Frontend | Website responsif, dengan rancangan PWA |
+| Frontend | Blade, Tailwind CSS, Alpine.js |
+| Build Tool | Vite |
+| Run Time | PHP 8.5.12, Node.js 24.22.3 |
+| Depedency Manager | Composer 2.11.2, npm |
 | Payment Integration | Payment Gateway (Sandbox) |
 | Version Control | Git & GitHub |
-| Development Tools | Google Antigravity |
+| Development Tools | Google Antigravity IDE |
 | Pengujian | Black Box Testing & User Acceptance Testing (UAT) |
 
 Framework atau library frontend tambahan akan ditetapkan pada tahap persiapan implementasi.

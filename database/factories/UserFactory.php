@@ -24,21 +24,42 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
+            'username' => fake()->unique()->userName(),
             'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
+            'role' => 'pengelola',
+            'is_active' => true,
             'remember_token' => Str::random(10),
         ];
     }
 
     /**
-     * Indicate that the model's email address should be unverified.
+     * State untuk pengguna role tenant.
      */
-    public function unverified(): static
+    public function tenant(): static
     {
         return $this->state(fn (array $attributes) => [
-            'email_verified_at' => null,
+            'role' => 'tenant',
+        ]);
+    }
+
+    /**
+     * State untuk pengguna role pengelola.
+     */
+    public function pengelola(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'pengelola',
+        ]);
+    }
+
+    /**
+     * State untuk akun yang berstatus non-aktif.
+     */
+    public function inactive(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_active' => false,
         ]);
     }
 }

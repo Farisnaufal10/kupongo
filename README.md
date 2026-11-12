@@ -203,9 +203,13 @@ php artisan key:generate
 ### 5. Konfigurasi Basis Data
 
 1. Buka **XAMPP Control Panel**, kemudian jalankan modul **Apache** dan **MySQL** (MariaDB).
-2. Akses phpMyAdmin melalui peramban (`http://127.0.0.1/phpmyadmin`) atau gunakan MySQL CLI, lalu buat database baru dengan nama:
+2. Akses phpMyAdmin melalui peramban (`http://127.0.0.1/phpmyadmin`) atau gunakan MySQL CLI, lalu buat dua database lokal (database operasional utama dan database pengujian):
    ```sql
+   -- Database operasional lokal
    CREATE DATABASE kupongo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+   -- Database khusus pengujian otomatis (testing isolation)
+   CREATE DATABASE kupongo_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    ```
 3. Buka file `.env` di root proyek dan pastikan konfigurasi database sesuai dengan pengaturan lokal MariaDB Anda:
    ```dotenv
@@ -231,7 +235,7 @@ php artisan key:generate
 
 > [!IMPORTANT]
 > **Status Migration KuponGo:**
-> File migrasi khusus untuk entitas bisnis KuponGo (tabel tenant, menu, master order, sub-order, item pesanan, dan transaksi) **saat ini belum disertakan dalam repository** karena masih menunggu finalisasi Entity Relationship Diagram (ERD) dan kamus data dari anggota tim yang bertanggung jawab. File migrasi resmi akan dibuat dan dibagikan secara terpusat setelah struktur skema ERD disetujui bersama oleh Kelompok 38. Jangan membuat migrasi ad-hoc di branch `main`.
+> File migrasi untuk 9 entitas inti KuponGo (users, pengelola, tenants, meja, menu, orders, sub_orders, order_details, payments) tersedia pada branch `chore/database-foundation`. Untuk keperluan pengujian, jalankan migrasi hanya pada database `kupongo_test` agar database utama `kupongo` tetap terlindungi. Dokumentasi arsitektur dan kamus data lengkap dapat dibaca pada [docs/ERD-KuponGo.md](docs/ERD-KuponGo.md).
 
 ### 6. Kompilasi Aset Frontend
 
@@ -262,14 +266,14 @@ http://127.0.0.1:8000
 
 ### 8. Pengujian Otomatis
 
-Jalankan rangkaian tes otomatis untuk memastikan fondasi aplikasi berjalan normal:
+Jalankan rangkaian tes otomatis untuk memastikan fondasi aplikasi dan basis data berjalan normal:
 
 ```bash
 php artisan test
 ```
 
 > [!NOTE]
-> Pengujian saat ini menjalankan suite pengujian dasar bawaan Laravel (status respons HTTP dan arsitektur pengujian). Pengujian fitur logika bisnis KuponGo akan ditambahkan secara bertahap sejalan dengan pengembangan modul.
+> Seluruh pengujian otomatis dijalankan secara terisolasi pada database `kupongo_test` (dikonfigurasi melalui `phpunit.xml` dan diproteksi melalui `TestCase.php`). Database utama `kupongo` dijamin aman dari penghapusan data atau migrasi saat pengujian berjalan. Pengujian mencakup pengujian unit/feature Laravel serta pengujian integritas struktur tabel, relasi, foreign key restrict, dan snapshot histori pesanan KuponGo.
 
 ---
 

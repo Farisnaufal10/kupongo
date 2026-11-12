@@ -76,4 +76,3 @@ class SubOrder extends Model
         return $this->hasMany(Payment::class, 'id_suborder', 'id_suborder');
     }
 }
-

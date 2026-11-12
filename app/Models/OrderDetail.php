@@ -49,4 +49,3 @@ class OrderDetail extends Model
         return $this->belongsTo(Menu::class, 'id_menu', 'id_menu');
     }
 }
-

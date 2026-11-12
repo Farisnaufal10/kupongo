@@ -51,4 +51,3 @@ class Menu extends Model
         return $this->hasMany(OrderDetail::class, 'id_menu', 'id_menu');
     }
 }
-

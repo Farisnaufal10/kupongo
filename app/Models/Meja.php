@@ -33,4 +33,3 @@ class Meja extends Model
         return $this->hasMany(Order::class, 'id_meja', 'id_meja');
     }
 }
-

@@ -357,4 +357,3 @@ Untuk memastikan konsistensi antarmuka dan logika bisnis antaranggota tim pengem
 > [!WARNING]
 > Integrasi Payment Gateway pada fase ini berjalan pada **lingkungan Sandbox (pengujian)**.
 > Sistem belum mengimplementasikan pencairan dana otomatis (*automated split disbursement*) ke rekening bank masing-masing tenant. Rekonsiliasi pembagian hasil penjualan tunai maupun QRIS sementara ini mengacu pada laporan rekapitulasi analitik di dashboard pengelola.
-

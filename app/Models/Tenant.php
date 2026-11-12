@@ -67,4 +67,3 @@ class Tenant extends Model
         return $this->status_operasional === self::STATUS_OPERASIONAL_BUKA && $this->is_active;
     }
 }
-

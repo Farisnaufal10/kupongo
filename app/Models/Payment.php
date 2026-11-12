@@ -93,4 +93,3 @@ class Payment extends Model
         return !is_null($this->id_suborder);
     }
 }
-

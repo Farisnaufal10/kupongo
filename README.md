@@ -16,12 +16,15 @@ Proyek ini dikembangkan oleh **Kelompok 38 – Program Studi Sistem Informasi, T
 - [Kebutuhan Non-Fungsional](#kebutuhan-non-fungsional)
 - [Metode Pengembangan](#metode-pengembangan)
 - [Teknologi Pengembangan](#teknologi-pengembangan)
+- [Arsitektur Basis Data](#arsitektur-basis-data)
+  - [Sembilan Tabel Inti dan Model Eloquent](#sembilan-tabel-inti-dan-model-eloquent)
+  - [Standarisasi dan Dokumentasi ERD](#standarisasi-dan-dokumentasi-erd)
 - [Panduan Instalasi dan Memulai Pengembangan](#panduan-instalasi-dan-memulai-pengembangan)
   - [1. Prasyarat Sistem](#1-prasyarat-sistem)
   - [2. Kloning Repository](#2-kloning-repository)
   - [3. Instalasi Dependensi Backend dan Frontend](#3-instalasi-dependensi-backend-dan-frontend)
   - [4. Konfigurasi Environment](#4-konfigurasi-environment)
-  - [5. Konfigurasi Basis Data](#5-konfigurasi-basis-data)
+  - [5. Konfigurasi Basis Data dan Migrasi](#5-konfigurasi-basis-data-dan-migrasi)
   - [6. Kompilasi Aset Frontend](#6-kompilasi-aset-frontend)
   - [7. Menjalankan Server Pengembangan](#7-menjalankan-server-pengembangan)
   - [8. Pengujian Otomatis](#8-pengujian-otomatis)
@@ -132,10 +135,45 @@ Berikut adalah rincian tumpukan teknologi (*tech stack*) aktual yang terkonfigur
 1. **Kompatibilitas MariaDB dan Driver Laravel:**
    Meskipun database lokal menggunakan MariaDB 10.11 melalui instalasi XAMPP, konfigurasi koneksi Laravel tetap menggunakan parameter standar `DB_CONNECTION=mysql`. MariaDB mengimplementasikan protokol jaringan yang sama dengan MySQL, sehingga koneksi melalui driver PDO MySQL Laravel berjalan optimal tanpa kendala kompatibilitas.
 2. **Driver State Awal Sesi, Cache, dan Antrean:**
-   Pada tahap fondasi awal ini, file `.env.example` dikonfigurasi menggunakan driver lokal sederhana agar aplikasi dapat langsung dijalankan oleh seluruh anggota tim tanpa dependensi layanan eksternal (seperti Redis) atau tabel database pendukung sebelum migrasi dijalankan:
+   Pada tahap awal ini, file `.env.example` dikonfigurasi menggunakan driver lokal sederhana agar aplikasi dapat langsung dijalankan oleh seluruh anggota tim tanpa dependensi layanan eksternal (seperti Redis):
    - `SESSION_DRIVER=file`
    - `CACHE_STORE=file`
    - `QUEUE_CONNECTION=sync`
+
+---
+
+## Arsitektur Basis Data
+
+Fondasi basis data KuponGo telah selesai diimplementasikan mengacu pada Entity Relationship Diagram (ERD) proposal Capstone dan telah diverifikasi menggunakan MariaDB 10.11.
+
+### Sembilan Tabel Inti dan Model Eloquent
+
+Seluruh sembilan tabel inti beserta model Eloquent dan relasinya telah tersedia pada repositori:
+
+| No | Tabel Database | Model Eloquent | Peran dan Cakupan Data |
+|---|---|---|---|
+| 1 | `users` | [App\Models\User](app/Models/User.php) | Autentikasi akun pengguna sistem berbasis peran (*Role-Based Access Control* / RBAC: `pengelola`, `tenant`). |
+| 2 | `pengelola` | [App\Models\Pengelola](app/Models/Pengelola.php) | Profil personal pengelola sentra kuliner, terhubung 1:1 dengan akun `users`. |
+| 3 | `tenants` | [App\Models\Tenant](app/Models/Tenant.php) | Profil kedai kuliner tenant, status operasional (`buka`/`tutup`), dan status aktif persetujuan pengelola. |
+| 4 | `meja` | [App\Models\Meja](app/Models/Meja.php) | Data meja fisik, nomor meja unik, kapasitas kursi, status ketersediaan, dan tautan file QR Code. |
+| 5 | `menu` | [App\Models\Menu](app/Models/Menu.php) | Katalog makanan dan minuman per tenant, harga porsi (`decimal(12,2)`), foto, dan status ketersediaan. |
+| 6 | `orders` | [App\Models\Order](app/Models/Order.php) | Master order sesi pemesanan meja pembeli (*multi-tenant single cart*), kode pesanan unik, dan agregasi status pembayaran. |
+| 7 | `sub_orders` | [App\Models\SubOrder](app/Models/SubOrder.php) | Partisi pesanan per tenant, kode sub-order unik, subtotal tenant, dan status tahapan dapur pengerjaan pesanan. |
+| 8 | `order_details` | [App\Models\OrderDetail](app/Models/OrderDetail.php) | Rincian item menu pesanan, kuantitas, catatan khusus, dan snapshot histori (`nama_menu`, `harga_satuan`). |
+| 9 | `payments` | [App\Models\Payment](app/Models/Payment.php) | Catatan transaksi pembayaran QRIS master order (`id_suborder = null`) maupun pembayaran tunai langsung per tenant. |
+
+### Standarisasi dan Dokumentasi ERD
+
+Dokumentasi lengkap mengenai struktur fisik basis data, kamus data terperinci, diagram Mermaid interaktif, keputusan integritas referensial, serta standarisasi nilai status transaksi dapat diakses pada:
+
+📄 **[docs/ERD-KuponGo.md](docs/ERD-KuponGo.md)**
+
+> [!IMPORTANT]
+> **Pedoman Wajib bagi Seluruh Pengembang Modul:**
+> Seluruh anggota tim pengembang (Pembeli, Tenant, dan Pengelola) **wajib merujuk pada `docs/ERD-KuponGo.md`** saat menyusun query, logika bisnis, dan antarmuka. Beberapa poin kunci arsitektur yang telah dibakukan:
+> 1. **Perlindungan Riwayat Transaksi (`ON DELETE RESTRICT`):** Relasi transaksi utama tidak boleh dihapus secara fisik (*hard delete*). Pembatalan transaksi wajib menggunakan perubahan status (`dibatalkan`).
+> 2. **Snapshot Data Histori:** Harga dan nama menu pada `order_details` tersimpan secara permanen saat checkout untuk menjaga akurasi laporan keuangan.
+> 3. **Konsistensi Nilai Status:** Wajib menggunakan nilai status terstandarisasi (`orders.status_pembayaran`, `sub_orders.status_pembayaran`, `sub_orders.status_pesanan`, dan `payments.status_pembayaran`).
 
 ---
 
@@ -200,18 +238,23 @@ Buat kunci enkripsi aplikasi Laravel:
 php artisan key:generate
 ```
 
-### 5. Konfigurasi Basis Data
+### 5. Konfigurasi Basis Data dan Migrasi
 
 1. Buka **XAMPP Control Panel**, kemudian jalankan modul **Apache** dan **MySQL** (MariaDB).
-2. Akses phpMyAdmin melalui peramban (`http://127.0.0.1/phpmyadmin`) atau gunakan MySQL CLI, lalu buat dua database lokal (database operasional utama dan database pengujian):
+2. Akses phpMyAdmin melalui peramban (`http://127.0.0.1/phpmyadmin`) atau gunakan MySQL CLI, lalu buat dua database lokal terpisah:
    ```sql
-   -- Database operasional lokal
+   -- Database operasional lokal untuk pengembangan fitur
    CREATE DATABASE kupongo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
    -- Database khusus pengujian otomatis (testing isolation)
    CREATE DATABASE kupongo_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    ```
-3. Buka file `.env` di root proyek dan pastikan konfigurasi database sesuai dengan pengaturan lokal MariaDB Anda:
+
+   > [!IMPORTANT]
+   > **Isolasi Database Pengujian:**
+   > Database `kupongo` digunakan sebagai database operasional harian saat mengembangkan fitur dan menjalankan server lokal. Database `kupongo_test` digunakan **secara eksklusif** oleh *test suite* otomatis (`php artisan test`). **Jangan mencampur kedua database ini** agar eksekusi pengujian otomatis tidak menghapus atau memodifikasi data pengujian manual pada database utama.
+
+3. Buka file `.env` di root proyek dan pastikan konfigurasi database mengarah ke database operasional `kupongo`:
    ```dotenv
    DB_CONNECTION=mysql
    DB_HOST=127.0.0.1
@@ -221,7 +264,7 @@ php artisan key:generate
    DB_PASSWORD=
    ```
    *(Kosongkan `DB_PASSWORD` jika menggunakan konfigurasi default instalasi XAMPP).*
-4. Pastikan pula konfigurasi state awal tetap menggunakan driver berbasis file/sinkron:
+4. Pastikan konfigurasi driver state awal tetap menggunakan driver berbasis file/sinkron:
    ```dotenv
    SESSION_DRIVER=file
    CACHE_STORE=file
@@ -232,10 +275,11 @@ php artisan key:generate
    php artisan config:clear
    php artisan db:show
    ```
-
-> [!IMPORTANT]
-> **Status Migration KuponGo:**
-> File migrasi untuk 9 entitas inti KuponGo (users, pengelola, tenants, meja, menu, orders, sub_orders, order_details, payments) tersedia pada branch `chore/database-foundation`. Untuk keperluan pengujian, jalankan migrasi hanya pada database `kupongo_test` agar database utama `kupongo` tetap terlindungi. Dokumentasi arsitektur dan kamus data lengkap dapat dibaca pada [docs/ERD-KuponGo.md](docs/ERD-KuponGo.md).
+6. Jalankan migrasi seluruh tabel KuponGo pada database operasional:
+   ```bash
+   php artisan migrate
+   ```
+   Perintah ini akan membuat tabel sistem framework serta seluruh sembilan tabel inti KuponGo pada database `kupongo`.
 
 ### 6. Kompilasi Aset Frontend
 
@@ -266,14 +310,24 @@ http://127.0.0.1:8000
 
 ### 8. Pengujian Otomatis
 
-Jalankan rangkaian tes otomatis untuk memastikan fondasi aplikasi dan basis data berjalan normal:
+Jalankan rangkaian tes otomatis untuk memverifikasi keutuhan aplikasi dan fondasi basis data:
 
 ```bash
 php artisan test
 ```
 
 > [!NOTE]
-> Seluruh pengujian otomatis dijalankan secara terisolasi pada database `kupongo_test` (dikonfigurasi melalui `phpunit.xml` dan diproteksi melalui `TestCase.php`). Database utama `kupongo` dijamin aman dari penghapusan data atau migrasi saat pengujian berjalan. Pengujian mencakup pengujian unit/feature Laravel serta pengujian integritas struktur tabel, relasi, foreign key restrict, dan snapshot histori pesanan KuponGo.
+> **Hasil Verifikasi Test Suite Saat Ini:**
+> Seluruh pengujian otomatis dijalankan secara terisolasi pada database `kupongo_test` (dikonfigurasi melalui `phpunit.xml` dan diproteksi melalui `TestCase.php`). Suite pengujian menghasilkan **13 passed (50 assertions)**, mencakup:
+> - Pengujian dasar arsitektur framework Laravel (Unit & Feature ExampleTest).
+> - Verifikasi ketersediaan seluruh 9 tabel inti KuponGo.
+> - Verifikasi tipe primary key dan kolom kunci asing sesuai ERD.
+> - Pengujian unique constraint pada `username`, nomor meja, kode pesanan master, dan kode sub-order.
+> - Pengujian relasi 1:1 `users` ke `pengelola` dan `tenants`.
+> - Pengujian hirarki pesanan multi-tenant dan immutabilitas snapshot menu pada `order_details`.
+> - Pengujian skenario pembayaran QRIS master vs pembayaran tunai per sub-order.
+> - Pengujian proteksi integritas transaksi (`ON DELETE RESTRICT`).
+> - Pengujian validasi kesamaan master order pada pembayaran sub-order.
 
 ---
 
@@ -300,7 +354,7 @@ Untuk menjaga stabilitas kode dan kelancaran kolaborasi 4 anggota tim, setiap an
    git switch -c feature/nama-fitur
    ```
 3. **Kembangkan dan uji kode secara lokal:**
-   Lakukan perubahan, pastikan aset berhasil dikompilasi (`npm run build`), dan pastikan tes tidak mengalami *error* (`php artisan test`).
+   Lakukan perubahan, pastikan aset berhasil dikompilasi (`npm run build`), dan pastikan seluruh tes berhasil tanpa galat (`php artisan test`).
 4. **Lakukan commit secara bertahap dengan pesan yang deskriptif:**
    Gunakan pesan commit yang jelas dalam Bahasa Indonesia atau Inggris, misalnya:
    ```bash
@@ -344,10 +398,10 @@ Seluruh anggota tim wajib mematuhi protokol keamanan berikut:
 
 | Status | Tahap |
 |---|---|
-| **In Development — Initial Setup (Sprint 0 / Fondasi Proyek)** | Persiapan repositori, standarisasi lingkungan Laravel 12, dan penyusunan modul arsitektur. |
+| **Foundation Completed — Feature Development (Sprint 1)** | Fondasi Laravel 12 dan Database Foundation (sembilan tabel inti, model Eloquent, relasi, dokumentasi ERD, dan unit testing) telah selesai dan digabungkan ke `main`. Repositori saat ini siap untuk pengembangan fitur paralel (Pembeli, Tenant, Pengelola) melalui branch fitur masing-masing. |
 
 > [!WARNING]
-> Seluruh fitur fungsional KuponGo yang tercantum dalam dokumen ini merupakan spesifikasi kebutuhan hasil analisis proposal Capstone dan **belum diklaim selesai diimplementasikan**. Repositori saat ini berada pada tahap inisialisasi fondasi sistem agar masing-masing anggota kelompok dapat memulai pengembangan modul secara paralel dan terstruktur.
+> Seluruh fitur fungsional KuponGo untuk aktor Pembeli, Tenant, Pengelola, serta integrasi Payment Gateway saat ini sedang dalam tahap pengembangan aktif dan **belum diklaim selesai diimplementasikan**. Anggota kelompok diharapkan mengembangkan modul masing-masing melalui branch fitur terpisah mengacu pada rancangan arsitektur dan relasi database yang telah dibakukan.
 
 ---
 

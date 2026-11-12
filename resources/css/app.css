@@ -7,6 +7,40 @@
 @source "../**/*.vue";
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    /* ------------------------------------------------------------------ */
+    /* Typography                                                           */
+    /* ------------------------------------------------------------------ */
+    --font-sans: "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif,
+        "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+    /* ------------------------------------------------------------------ */
+    /* KuponGo Design Tokens — v1.0                                        */
+    /* Ikuti docs/DESIGN-SYSTEM-KUPONGO.md                                 */
+    /* ------------------------------------------------------------------ */
+
+    /* Brand */
+    --color-brand-forest: #103B2C;
+    --color-brand-forest-hover: #0B2B20;
+    --color-brand-gold: #C5A46D;
+    --color-brand-ivory: #F8F7F2;
+
+    /* Surface */
+    --color-surface-default: #FFFFFF;
+
+    /* Text */
+    --color-ui-text: #202923;
+    --color-ui-muted: #67736B;
+
+    /* Border */
+    --color-ui-border: #E2E5DE;
+
+    /* Semantic states */
+    --color-state-success: #15803D;
+    --color-state-success-bg: #DCFCE7;
+    --color-state-warning: #A16207;
+    --color-state-warning-bg: #FEF9C3;
+    --color-state-danger: #B91C1C;
+    --color-state-danger-bg: #FEE2E2;
+    --color-state-info: #1D4ED8;
+    --color-state-info-bg: #DBEAFE;
 }
